@@ -5,7 +5,7 @@ let   sendOtp = async (formData, handleClickVariant,setDisplay,setCount, setClic
       return;
     }
 // back tick `
-    fetch(`${url}/api/send-otp`, {
+    fetch(`https://infollion-apay.onrender.com/api/send-otp`, {
       method: "POST",
       body: JSON.stringify(formData),
       headers: {
