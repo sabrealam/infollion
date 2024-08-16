@@ -1,29 +1,14 @@
 import React, { useState } from "react";
-import Button from "@mui/material/Button";
-import { Autocomplete, TextField } from "@mui/material";
 import Login from "./Login";
 import Register from "./Register";
 import '../App.css'
-function AuthPage() {
-  let [formData, setFormData] = useState({
-    tag: "",
-    name: "",
-    code: "",
-    number: "",
-    email: "",
-  });
+import Otp from "./Otp";
+function AuthPage() { 
   const [error, setError] = React.useState(false);
   let [login, setLogin] = useState(false);
-  let handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(formData);
-  };
-  let handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  let [alertCount, setAlertCount] = useState(0);
+ 
+ 
 
   return (
     <div
@@ -51,11 +36,17 @@ function AuthPage() {
       <div id="second-half" 
       // style={{ width: "50%", height: "100%", background:"pink" }}
       >
-        {login ? (
-          <Login setLogin={setLogin} />
-        ) : (
-          <Register setLogin={setLogin} />
-        )}
+        {
+  login === true ? (
+    <Login setLogin={setLogin} />
+  ) : login === false ? (
+    <Register setLogin={setLogin} />
+  ) : login === 1 ? ( 
+    <Otp setLogin={setLogin} alertCount={alertCount} setAlertCount={setAlertCount} />
+  ) : (
+    ""
+  )
+}
       </div>
     </div>
   );

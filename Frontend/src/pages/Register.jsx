@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import { Autocomplete, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSnackbar } from "notistack";
 import { imgSrc } from "../assets/img";
+import sendOtp from "../logic/sendOtp";
+import verifyOtp from "../logic/verifyOtp";
+import sendPassword from "../logic/sendPassword";
 
+let intervalId;
 function Register(props) {
   let [formData, setFormData] = useState({
     tag: "",
@@ -24,6 +28,7 @@ function Register(props) {
     email: false,
     // otp: false,
   });
+  let [count, setCount] = useState(0);
   let [otp, setOtp] = useState({ otp: "" });
   let [alertCount, setAlertCount] = useState(0);
   let [countryData, setCountryData] = useState([]);
@@ -31,6 +36,7 @@ function Register(props) {
   let [display, setDisplay] = useState(false);
   let [clickCount, setClickCount] = useState(1);
   let navigate = useNavigate();
+  const [isCounting, setIsCounting] = useState(false);
 
   const handleClickVariant = (variant, message) => () => {
     enqueueSnackbar(message, { variant });
@@ -66,88 +72,18 @@ function Register(props) {
     }
 
     if (clickCount === 1) {
-      sendOtp();
+      sendOtp(formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown, );
     } else if (clickCount >= 2) {
-      verifyOtp();
+      verifyOtp( otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword, enqueueSnackbar, formData );
     }
   };
 
-  let sendOtp = async () => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(formData.email)) {
-      handleClickVariant("error", "Invalid email address format!")();
-      return;
-    }
-
-    fetch("http://localhost:5000/api/send-otp", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        if (json.success === true) {
-          handleClickVariant("success", "OTP sent successfully!")();
-          setDisplay(true);
-          setClickCount((count) => count + 1);
-        } else {
-          handleClickVariant("error", "Failed to send the OTP")();
-        }
-      })
-      .catch((err) => console.log(err.message));
-  };
-
-  let verifyOtp = async () => {
-    setAlertCount((count) => count + 1);
-    if (alertCount >= 4) {
-      handleClickVariant(
-        "error",
-        "You Can Only Verify Your OTP 4 Times In 24 Hours!"
-      )();
-      return;
-    }
-    fetch("http://localhost:5000/api/verify-otp", {
-      method: "POST",
-      body: JSON.stringify({ otp: otp }),
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        if (json.success === true) {
-          handleClickVariant("success", "OTP verified successfully!")();
-          navigate("/thank-you");
-          sendPassword();
-        } else {
-          handleClickVariant("error", "OTP verification failed!")();
-        }
-      })
-      .catch((err) => console.log(err.message));
-  };
-
+ 
   let handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError((prev) => ({ ...prev, [e.target.name]: false }));
   };
-
-  let sendPassword = async () => {
-    try {
-      let { data } = await axios({
-        method: "POST",
-        url: "http://localhost:5000/api/v1/register",
-        data: formData,
-      });
-      // snackbar
-      console.log(data);
-      enqueueSnackbar("Password sent to your email", { variant: "success" });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+ 
   let fetchCountryData = async () => {
     try {
       let { data } = await axios.get("https://restcountries.com/v3.1/all");
@@ -157,10 +93,27 @@ function Register(props) {
     }
   };
 
+  const startCountDown = () => {
+    if (isCounting) return;  
+    setIsCounting(true);
+    intervalId = setInterval(() => {
+      setCount((prev) => {
+        if (prev <= 1) {
+          clearInterval(intervalId);
+          setIsCounting(false); 
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, []);
   React.useEffect(() => {
     fetchCountryData();
   }, []);
-
   return (
     <div
       className="register"
@@ -196,7 +149,10 @@ function Register(props) {
                 limitTags={2}
                 size="small"
                 id="multiple-limit-tags"
-                onChange={(e, v) => setFormData({ ...formData, tag: v })}
+                onChange={(e, v) =>{
+                   setFormData({ ...formData, tag: v }) 
+                  //  handleError()
+                  }}
                 options={top100Films}
                 getOptionLabel={(option) => option}
                 renderInput={(params) => (
@@ -204,6 +160,7 @@ function Register(props) {
                     {...params}
                     label="Mr/Mrs"
                     helperText={error.tag ? "This field is required" : ""}
+                    style={{width: "130px"}} 
                     size="small"
                     placeholder=""
                   />
@@ -211,8 +168,8 @@ function Register(props) {
                 sx={{ width: "110px" }}
               />
               <TextField
-                style={{ width: "75%", marginLeft: "15px" }}
-                helperText={error.name ? "This Field Is Required" : ""}
+                style={{ width: "75%", marginLeft: "30px"  }}
+                helperText={error.name ? "This Field Is Required" : ""} 
                 label="Name"
                 name="name"
                 onChange={handleChange}
@@ -249,7 +206,9 @@ function Register(props) {
                   <TextField
                     {...params}
                     label="ISD"
+                    style={{width: "130px"}}
                     helperText={error.code ? "This Field Is Required" : ""}
+                     
                     size="small"
                     placeholder=""
                   />
@@ -257,8 +216,8 @@ function Register(props) {
                 sx={{ width: "110px" }}
               />
               <TextField
-                style={{ width: "75%", marginLeft: "15px" }}
-                helperText={error.number ? "This Field Is Required" : ""}
+                style={{ width: "75%", marginLeft: "30px",}}
+                helperText={error.number ? "This Field Is Required" : ""} 
                 label="Mobile Number*"
                 size="small"
                 name="number"
@@ -266,10 +225,11 @@ function Register(props) {
               />
             </div>
           </div>
-          <div>
+
+          <div style={{ textAlign: "right" }}>
             <TextField
-              style={{ width: "100%", marginTop: "10px" }}
-              helperText={error.email ? "This Field Is Required" : ""}
+              style={{ width: "100%", marginTop: "10px"  }}
+              helperText={error.email ? "This Field Is Required" : ""} 
               label="Email*"
               name="email"
               onChange={handleChange}
@@ -281,7 +241,7 @@ function Register(props) {
                 marginTop: "20px",
                 display: display ? "flex" : "none",
               }}
-              helperText={error.otp ? "This Field Is Required" : ""}
+              helperText={error.otp ? "This Field Is Required" : ""} 
               label="Otp*"
               name="otp"
               onChange={(e) => {
@@ -290,6 +250,28 @@ function Register(props) {
               }}
               size="small"
             />
+            <div
+              style={{
+                color: "red",
+                cursor: "pointer",
+                marginTop: "5px",
+                display: clickCount == 2 ? "block" : "none",
+              }}
+            >
+              { alertCount >= 4 ? "Disabled" : count == 0 ? (
+                <p
+                  style={{ color: "red", cursor: "pointer", marginTop: "10px" }}
+                  onClick={() => {
+                    setCount(60); 
+                    startCountDown();
+                  }}
+                >
+                  Resend OTP
+                </p>
+              ) : (
+                <p>Resend OTP in {count} seconds</p>
+              )}
+            </div>
             <Button
               type="submit"
               style={{
@@ -303,6 +285,10 @@ function Register(props) {
               {clickCount === 1 ? "Get Otp On Email" : "Submit"}
             </Button>
           </div>
+          {/* <div>
+            <p>Resend OTP in   seconds</p>
+              
+          </div> */}
           <div
             style={{
               width: "100%",

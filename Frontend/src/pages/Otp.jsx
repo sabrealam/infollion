@@ -4,36 +4,38 @@ import { Autocomplete, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { enqueueSnackbar, useSnackbar } from "notistack";
 import axios from "axios";
-import sendOtp from "../logic/sendOtp";
-function Login(props) {
-  let [formData, setFormData] = useState({ email: "", password: "", });
-  const [error, setError] = useState({ email: false, password: false,});
-  let [isPasswordVisible, setIsPasswordVisible] = useState(true);
+import verifyOtp from "../logic/verifyOtp";
+function Otp(props) {
+  let [formData, setFormData] = useState({ otp: ""});
+  const [error, setError] = useState({ email: false, password: false });
   let navigate = useNavigate();
-
-
 
   let handleSubmit = async (e) => {
     e.preventDefault();
+    props.setAlertCount(props.alertCount + 1);
     if (handleError()) {
       handleClickVariant("error", "Please fill in all required fields!")();
       return;
-    }
-    try {
-      let { data } = await axios({
-        method: "post",
-        url: "http://localhost:5000/api/v1/login",
-        data: formData,
-      });
-      console.log(data);
-      localStorage.setItem("token", data.token);
-      // snackbar
-      navigate("/thank-you");
-      handleClickVariant("success", "Login Successful")();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    } 
+    verifyOtp(formData.otp, handleClickVariant, navigate, props.alertCount, props.setAlertCount);
+    loginUser()
+
+};
+let loginUser = async ()=>{
+      try {
+        let { data } = await axios({
+          method: "post",
+          url: "http://localhost:5000/api/v1/login",
+          data: formData,
+        });
+        console.log(data);
+        localStorage.setItem("token", data.token);
+        handleClickVariant("success", "Login Successful")();
+      } catch (error) {
+        console.log(error);
+      }
+
+  }
   let handleChange = (e) => {
     setFormData({
       ...formData,
@@ -89,117 +91,36 @@ function Login(props) {
       </div>
       <div className="login-input">
         <p style={{ fontSize: "20px", textAlign: "center", margin: "15px" }}>
-          Login To Dashboard
+          Enter The Otp To Proceed
         </p>
         <form action="" onSubmit={handleSubmit}>
           <div>
             <div style={style}>
               <TextField
                 className="inpt"
-                style={{ marginLeft: "15px" }}
                 helperText={error.email ? "This Field Is Required" : ""}
                 id="demo-helper-text-misaligned"
-                label="Email / Username"
-                name="email"
-                onChange={(e) => handleChange(e)}
-                size="small"
-              />
-            </div>
-            <div style={style}>
-              { isPasswordVisible ? (<TextField
-                className="inpt"
-                style={{ marginLeft: "15px" }}
-                helperText={error.password ? "This Field Is Required" : ""}
-                id="demo-helper-text-misaligned"
-                label="Password*"
-                size="small"
-                name="password"
-                onChange={(e) => handleChange(e)}
-              />): (
-                <TextField
-                className="inpt"
-                style={{ marginLeft: "15px" }}
-                helperText={error.password ? "This Field Is Required" : ""}
-                id="demo-helper-text-misaligned"
-                label="Otp*"
-                size="small"
+                label="Enter Otp"
                 name="otp"
                 onChange={(e) => handleChange(e)}
+                size="small"
               />
-              )}
             </div>
           </div>
-          <div style={style}>
-            <Button
-              type="submit"
-              variant="contained"
-              className="inpt"
-              disabled={isPasswordVisible ? false : true} 
-              style={{
-                height: "40px",
 
-                borderRadius: "20px",
-                background: "#ec9324",
-                marginTop: "20px",
-              }}
-            >
-              Login With Password
-            </Button>
-          </div>
           <div style={style}>
             <Button
               type="submit"
               className="inpt"
               style={{
                 height: "40px",
-
-                border: "1px solid gray",
-                borderRadius: "10px",
-                marginTop: "20px",
-              }}
-            >
-              <img
-                width={"20px"}
-                height={"30px"}
-                src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg"
-              />{" "}
-              &emsp; Sign In With Google
-            </Button>
-          </div>
-          <div style={{ ...style, minHeight: "20px" }}>Or</div>
-          <div style={style}>
-            <Button
-              // type="submit"
-              className="inpt"
-              style={{
-                height: "40px",
                 border: "1px solid gray",
                 borderRadius: "10px",
               }}
-              onClick={()=>{
-                const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-                if (!emailRegex.test(formData.email)) {
-                  handleClickVariant("error", "Invalid email address format!")();
-                  return;
-                }
-                sendOtp(formData,handleClickVariant, navigate)
-                props.setLogin(1)
-              }}
+              onClick={() => sendOtp(formData, handleClickVariant, navigate)}
             >
-              Login With Otp
+              Proceed
             </Button>
-          </div>
-          <div style={style}>
-            <p>
-              Don't have an account?{" "}
-              <Link
-                className="link"
-                to=""
-                onClick={() => props.setLogin(false)}
-              >
-                Register as an expert
-              </Link>
-            </p>
           </div>
         </form>
       </div>
@@ -207,6 +128,6 @@ function Login(props) {
   );
 }
 
-export default Login;
+export default Otp;
 
 const top100Films = ["Mr", "Mrs", "Miss", "Dr.", "Ms", "Prof."];
