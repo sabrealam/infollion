@@ -20,7 +20,7 @@ function Login(props) {
       handleClickVariant("error", "Please fill in all required fields!")();
       return;
     }
-    loginUser(formData, handleClickVariant, navigate);
+    loginUser(formData, handleClickVariant, navigate, url);
   };
   let handleChange = (e) => {
     setFormData({
