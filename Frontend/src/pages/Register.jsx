@@ -37,11 +37,11 @@ function Register(props) {
   let [clickCount, setClickCount] = useState(1);
   let navigate = useNavigate();
   const [isCounting, setIsCounting] = useState(false);
-
+  let url = import.meta.env.VITE_API_URL
   const handleClickVariant = (variant, message) => () => {
     enqueueSnackbar(message, { variant });
   };
-
+ 
   const handleError = () => {
     let errors = {};
     let hasError = false;
@@ -72,9 +72,9 @@ function Register(props) {
     }
 
     if (clickCount === 1) {
-      sendOtp(formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown, );
+      sendOtp(formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown,url );
     } else if (clickCount >= 2) {
-      verifyOtp( otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword, enqueueSnackbar, formData );
+      verifyOtp( otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword, enqueueSnackbar, formData, url );
     }
   };
 

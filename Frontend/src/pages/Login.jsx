@@ -5,12 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { enqueueSnackbar, useSnackbar } from "notistack";
 import axios from "axios";
 import sendOtp from "../logic/sendOtp";
+import loginUser from "../logic/loginUser";
 function Login(props) {
   let [formData, setFormData] = useState({ email: "", password: "", });
   const [error, setError] = useState({ email: false, password: false,});
   let [isPasswordVisible, setIsPasswordVisible] = useState(true);
   let navigate = useNavigate();
-
+  let url = import.meta.env.VITE_API_URL
 
 
   let handleSubmit = async (e) => {
@@ -19,20 +20,7 @@ function Login(props) {
       handleClickVariant("error", "Please fill in all required fields!")();
       return;
     }
-    try {
-      let { data } = await axios({
-        method: "post",
-        url: "http://localhost:5000/api/v1/login",
-        data: formData,
-      });
-      console.log(data);
-      localStorage.setItem("token", data.token);
-      // snackbar
-      navigate("/thank-you");
-      handleClickVariant("success", "Login Successful")();
-    } catch (error) {
-      console.log(error);
-    }
+    loginUser(formData, handleClickVariant, navigate);
   };
   let handleChange = (e) => {
     setFormData({

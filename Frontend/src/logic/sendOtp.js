@@ -1,11 +1,11 @@
-let   sendOtp = async (formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown) => {
+let   sendOtp = async (formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown,url) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(formData.email)) {
       handleClickVariant("error", "Invalid email address format!")();
       return;
     }
-
-    fetch("http://localhost:5000/api/send-otp", {
+// back tick `
+    fetch(`${url}/api/send-otp`, {
       method: "POST",
       body: JSON.stringify(formData),
       headers: {

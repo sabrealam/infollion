@@ -11,6 +11,10 @@ app.use(bodyParser.json());
 app.use(cors());
 
 
+app.get("/", (req, res) => {
+    res.send("Hello World!");
+});
+
 // Route Use
 app.use('/api/v1', require('./Backend/controllers/user.controller'));
 

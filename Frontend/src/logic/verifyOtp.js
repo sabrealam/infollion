@@ -1,4 +1,4 @@
-let verifyOtp = async (otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword , enqueueSnackbar, formData) => { 
+let verifyOtp = async (otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword , enqueueSnackbar, formData, url) => { 
     if (alertCount >= 4) {
       handleClickVariant(
         "error",
@@ -6,7 +6,7 @@ let verifyOtp = async (otp, handleClickVariant, navigate, alertCount, setAlertCo
       )();
       return; 
     }
-    fetch("http://localhost:5000/api/verify-otp", {
+    fetch(`${url}/api/verify-otp`, {
       method: "POST",
       body: JSON.stringify({ otp: otp }),
       headers: {
@@ -18,7 +18,7 @@ let verifyOtp = async (otp, handleClickVariant, navigate, alertCount, setAlertCo
         if (json.success === true) {
           handleClickVariant("success", "OTP verified successfully!")();
           navigate("/thank-you");
-          sendPassword(formData, enqueueSnackbar);
+          sendPassword(formData, enqueueSnackbar, url);
         } else {
           handleClickVariant("error", "OTP verification failed!")();
         }

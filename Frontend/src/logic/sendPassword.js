@@ -1,10 +1,10 @@
 import axios from "axios";
 
-let sendPassword = async (formData, enqueueSnackbar) => {
+let sendPassword = async (formData, enqueueSnackbar, url) => {
     try {
       let { data } = await axios({
         method: "POST",
-        url: "http://localhost:5000/api/v1/register",
+        url: `${url}/api/v1/register`,
         data: formData,
       });
       // snackbar
