@@ -83,7 +83,7 @@ function Register(props) {
         .then((data) => {
           if(data.message == "User already exist"){
             handleClickVariant("error", "User already exist")();
-            props.setLogin(false)
+            props.setLogin(true)
             return
           }else {
             sendOtp(

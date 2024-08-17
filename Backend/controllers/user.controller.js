@@ -67,6 +67,7 @@ userRouter.post("/register/check", async (req, res) => {
     if (isUserExist) {
       return res.status(400).json({ message: "User already exist" });
     }
+    res.status(200).json({ message: "not exist" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
