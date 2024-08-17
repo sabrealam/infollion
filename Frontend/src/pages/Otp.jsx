@@ -3,39 +3,50 @@ import Button from "@mui/material/Button";
 import { Autocomplete, TextField } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 import { enqueueSnackbar, useSnackbar } from "notistack";
-import axios from "axios";
-import verifyOtp from "../logic/verifyOtp";
+import axios from "axios"; 
 function Otp(props) {
   let [formData, setFormData] = useState({ otp: ""});
   const [error, setError] = useState({ email: false, password: false });
   let navigate = useNavigate();
-
+  let url = import.meta.env.VITE_API_URL
   let handleSubmit = async (e) => {
     e.preventDefault();
     props.setAlertCount(props.alertCount + 1);
-    if (handleError()) {
-      handleClickVariant("error", "Please fill in all required fields!")();
-      return;
-    } 
-    verifyOtp(formData.otp, handleClickVariant, navigate, props.alertCount, props.setAlertCount);
-    loginUser()
+    verifyOtp()
+ 
 
 };
-let loginUser = async ()=>{
-      try {
-        let { data } = await axios({
-          method: "post",
-          url: "http://localhost:5000/api/v1/login",
-          data: formData,
-        });
-        console.log(data);
-        localStorage.setItem("token", data.token);
-        handleClickVariant("success", "Login Successful")();
-      } catch (error) {
-        console.log(error);
-      }
 
-  }
+
+
+
+let verifyOtp = async () => {  
+  fetch(`https://infollion-apay.onrender.com/api/verify-otp`, {
+    method: "POST",
+    body: JSON.stringify({ otp: formData.otp }),
+    headers: {
+      "Content-type": "application/json",
+    },
+  })
+    .then((response) => response.json())
+    .then((json) => {
+      if (json.success === true) {
+        handleClickVariant("success", "OTP verified successfully!")();
+        navigate("/thank-you");
+      } else {
+        handleClickVariant("error", "OTP verification failed!")();
+      }
+    })
+    .catch((err) => console.log(err.message));
+};
+
+ 
+
+
+
+
+
+
   let handleChange = (e) => {
     setFormData({
       ...formData,
@@ -117,7 +128,7 @@ let loginUser = async ()=>{
                 border: "1px solid gray",
                 borderRadius: "10px",
               }}
-              onClick={() => sendOtp(formData, handleClickVariant, navigate)}
+            
             >
               Proceed
             </Button>

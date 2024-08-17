@@ -6,7 +6,7 @@ let verifyOtp = async (otp, handleClickVariant, navigate, alertCount, setAlertCo
       )();
       return; 
     }
-    fetch(`${url}/api/verify-otp`, {
+    fetch(`https://infollion-apay.onrender.com/api/verify-otp`, {
       method: "POST",
       body: JSON.stringify({ otp: otp }),
       headers: {

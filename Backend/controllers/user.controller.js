@@ -41,7 +41,7 @@ userRouter.post("/register", async (req, res) => {
     };
 
     //  Send The password To the User email
-    transporter.sendMail(mailOptions, async  (error, info) => {
+    transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
         return res
           .status(500)
@@ -55,6 +55,18 @@ userRouter.post("/register", async (req, res) => {
       });
     });
     // Return The Response
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
+userRouter.post("/register/check", async (req, res) => {
+  const { name, email, tag, code, number } = req.body;
+
+  try {
+    let isUserExist = await User.findOne({ email: email });
+    if (isUserExist) {
+      return res.status(400).json({ message: "User already exist" });
+    }
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }

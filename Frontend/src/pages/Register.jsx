@@ -37,11 +37,11 @@ function Register(props) {
   let [clickCount, setClickCount] = useState(1);
   let navigate = useNavigate();
   const [isCounting, setIsCounting] = useState(false);
-  let url = import.meta.env.VITE_API_URL
+  let url = import.meta.env.VITE_API_URL;
   const handleClickVariant = (variant, message) => () => {
     enqueueSnackbar(message, { variant });
   };
- 
+
   const handleError = () => {
     let errors = {};
     let hasError = false;
@@ -70,20 +70,58 @@ function Register(props) {
       handleClickVariant("error", "Invalid mobile number format!")();
       return;
     }
-
-    if (clickCount === 1) {
-      sendOtp(formData, handleClickVariant,setDisplay,setCount, setClickCount,startCountDown,url );
-    } else if (clickCount >= 2) {
-      verifyOtp( otp, handleClickVariant, navigate, alertCount, setAlertCount, sendPassword, enqueueSnackbar, formData, url );
+    if(clickCount == 1){
+      fetch("https://infollion-apay.onrender.com/api/v1/register/check", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+  
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if(data.message == "User already exist"){
+            handleClickVariant("error", "User already exist")();
+            props.setLogin(false)
+            return
+          }else {
+            sendOtp(
+              formData,
+              handleClickVariant,
+              setDisplay,
+              setCount,
+              setClickCount,
+              startCountDown,
+              url
+            );
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+  
+     if (clickCount >= 2) {
+      verifyOtp(
+        otp,
+        handleClickVariant,
+        navigate,
+        alertCount,
+        setAlertCount,
+        sendPassword,
+        enqueueSnackbar,
+        formData,
+        url
+      );
     }
   };
 
- 
   let handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError((prev) => ({ ...prev, [e.target.name]: false }));
   };
- 
+
   let fetchCountryData = async () => {
     try {
       let { data } = await axios.get("https://restcountries.com/v3.1/all");
@@ -94,13 +132,13 @@ function Register(props) {
   };
 
   const startCountDown = () => {
-    if (isCounting) return;  
+    if (isCounting) return;
     setIsCounting(true);
     intervalId = setInterval(() => {
       setCount((prev) => {
         if (prev <= 1) {
           clearInterval(intervalId);
-          setIsCounting(false); 
+          setIsCounting(false);
           return 0;
         }
         return prev - 1;
@@ -149,10 +187,10 @@ function Register(props) {
                 limitTags={2}
                 size="small"
                 id="multiple-limit-tags"
-                onChange={(e, v) =>{
-                   setFormData({ ...formData, tag: v }) 
+                onChange={(e, v) => {
+                  setFormData({ ...formData, tag: v });
                   //  handleError()
-                  }}
+                }}
                 options={top100Films}
                 getOptionLabel={(option) => option}
                 renderInput={(params) => (
@@ -160,7 +198,7 @@ function Register(props) {
                     {...params}
                     label="Mr/Mrs"
                     helperText={error.tag ? "This field is required" : ""}
-                    style={{width: "130px"}} 
+                    style={{ width: "130px" }}
                     size="small"
                     placeholder=""
                   />
@@ -168,8 +206,8 @@ function Register(props) {
                 sx={{ width: "110px" }}
               />
               <TextField
-                style={{ width: "75%", marginLeft: "30px"  }}
-                helperText={error.name ? "This Field Is Required" : ""} 
+                style={{ width: "75%", marginLeft: "30px" }}
+                helperText={error.name ? "This Field Is Required" : ""}
                 label="Name"
                 name="name"
                 onChange={handleChange}
@@ -206,9 +244,8 @@ function Register(props) {
                   <TextField
                     {...params}
                     label="ISD"
-                    style={{width: "130px"}}
+                    style={{ width: "130px" }}
                     helperText={error.code ? "This Field Is Required" : ""}
-                     
                     size="small"
                     placeholder=""
                   />
@@ -216,8 +253,8 @@ function Register(props) {
                 sx={{ width: "110px" }}
               />
               <TextField
-                style={{ width: "75%", marginLeft: "30px",}}
-                helperText={error.number ? "This Field Is Required" : ""} 
+                style={{ width: "75%", marginLeft: "30px" }}
+                helperText={error.number ? "This Field Is Required" : ""}
                 label="Mobile Number*"
                 size="small"
                 name="number"
@@ -228,8 +265,8 @@ function Register(props) {
 
           <div style={{ textAlign: "right" }}>
             <TextField
-              style={{ width: "100%", marginTop: "10px"  }}
-              helperText={error.email ? "This Field Is Required" : ""} 
+              style={{ width: "100%", marginTop: "10px" }}
+              helperText={error.email ? "This Field Is Required" : ""}
               label="Email*"
               name="email"
               onChange={handleChange}
@@ -241,7 +278,7 @@ function Register(props) {
                 marginTop: "20px",
                 display: display ? "flex" : "none",
               }}
-              helperText={error.otp ? "This Field Is Required" : ""} 
+              helperText={error.otp ? "This Field Is Required" : ""}
               label="Otp*"
               name="otp"
               onChange={(e) => {
@@ -258,11 +295,13 @@ function Register(props) {
                 display: clickCount == 2 ? "block" : "none",
               }}
             >
-              { alertCount >= 4 ? "Disabled" : count == 0 ? (
+              {alertCount >= 4 ? (
+                "Disabled"
+              ) : count == 0 ? (
                 <p
                   style={{ color: "red", cursor: "pointer", marginTop: "10px" }}
                   onClick={() => {
-                    setCount(60); 
+                    setCount(60);
                     startCountDown();
                   }}
                 >
