@@ -303,6 +303,15 @@ function Register(props) {
                   onClick={() => {
                     setCount(60);
                     startCountDown();
+                    sendOtp(
+                      formData,
+                      handleClickVariant,
+                      setDisplay,
+                      setCount,
+                      setClickCount,
+                      startCountDown,
+                      url
+                    );
                   }}
                 >
                   Resend OTP
