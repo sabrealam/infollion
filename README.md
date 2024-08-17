@@ -1,3 +1,6 @@
+![Screenshot of Email OTP System](./Frontend/src/assets/infollion.png)
+
+
 # Email OTP System
 
 This project is an **Email OTP System** built using Node.js, Nodemailer, and MongoDB. It allows users to generate and verify OTPs sent to their email addresses. The system is designed with robust error handling and data storage in MongoDB.
